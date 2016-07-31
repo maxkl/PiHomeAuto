@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>PiHomeAuto</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-3.3.6/css/bootstrap.min.css') }}" />
+    </head>
+    <body>
+        <div class="container">
+            <h1>Pi Haussteuerung</h1>
+            <form>
+                <div class="form-group">
+                    <label for="input-group">Hauscode</label>
+                    <input id="input-group" class="form-control" maxlength="5" minlength="5" required pattern="^[01]{5}$" />
+                </div>
+                <div class="form-group">
+                    <label for="input-device">Gerätecode</label>
+                    <input id="input-device" class="form-control" maxlength="5" minlength="5" required pattern="^[01]{5}$" />
+                </div>
+
+                <div id="buttons" class="btn-group btn-group-lg">
+                    <button type="button" id="btn-on" class="btn btn-success">An</button>
+                    <button type="button" id="btn-off" class="btn btn-danger">Aus</button>
+                </div>
+                <i id="loading" class="glyphicon glyphicon-hourglass" style="vertical-align: middle;margin-left: 1em;display: none;"></i>
+                <i id="error" class="glyphicon glyphicon-exclamation-sign text-danger" style="vertical-align: middle;margin-left: 1em;display: none;"></i>
+            </form>
+        </div>
+
+        <script src="{{ url_for('static', filename='js/lib/jquery-2.2.4.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='bootstrap-3.3.6/js/bootstrap.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    </body>
+</html>

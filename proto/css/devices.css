@@ -1,0 +1,21 @@
+
+#device-list tr td {
+    vertical-align: middle;
+}
+
+#device-list tr td:nth-child(2) {
+    white-space: normal;
+}
+
+#device-list tr td:nth-child(3) {
+    font: .9em Menlo, Monaco, Consolas, "Courier New", monospace;
+    opacity: .7;
+}
+
+#device-list tr td:nth-child(4) {
+    text-align: center;
+}
+
+.btn-group .btn {
+    float: none;
+}
