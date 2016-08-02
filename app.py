@@ -1,13 +1,38 @@
 import sys
+import threading
 from os import path
 
 from bottle import run, get, put, json_dumps, response, request, install, abort, default_app, static_file, delete
 from bottle_sqlite import SQLitePlugin
 
 from db_util import create_tables
+from rcswitch import RCSwitch
 
+pin = 4
 dbfile = 'test.db'
 static_dir = path.join(path.dirname(path.abspath(__file__)), 'static')
+
+switch_lock = threading.Lock()
+
+RCSwitch.setup()
+switch = RCSwitch()
+switch.enable_transmit(pin)
+
+
+def switch_on(group, device):
+    with switch_lock:
+        for _ in range(4):
+            switch.switch_on(group, device)
+
+
+def switch_off(group, device):
+    with switch_lock:
+        for _ in range(4):
+            switch.switch_off(group, device)
+
+
+def switch_set(group, device, on):
+    switch_on(group, device) if on else switch_off(group, device)
 
 create_tables(dbfile)
 
@@ -45,7 +70,7 @@ def get_devices(db):
 
 @put('/devices/')
 def put_devices(db):
-    if not request.json:
+    if request.json is None:
         abort(400, 'Not JSON')
     data = request.json
     if 'name' not in data or 'group_code' not in data or 'device_code' not in data:
@@ -67,7 +92,7 @@ def get_device(db, device_id):
 
 @put('/devices/<device_id:int>')
 def put_device(db, device_id):
-    if not request.json:
+    if request.json is None:
         abort(400, 'Not JSON')
     data = request.json
     if 'name' not in data or 'group_code' not in data or 'device_code' not in data:
@@ -87,25 +112,29 @@ def put_device(db, device_id):
 
 
 @get('/devices/<device_id:int>/state')
-def get_device(db, device_id):
+def get_device_state(db, device_id):
     # TODO
     return ret_json({'state': False})
 
 
 @put('/devices/<device_id:int>/state')
-def get_device(db, device_id):
+def put_device_state(db, device_id):
     # TODO
+    if request.json is None:
+        abort(400, 'Not JSON')
+    new_state = request.json
+    switch_set('10100', '01000', new_state)
     return ret_json({})
 
 
 @get('/devices/<device_id:int>/schedule')
-def get_device(db, device_id):
+def get_device_schedule(db, device_id):
     # TODO
     return ret_json({'schedule': []})
 
 
 @put('/devices/<device_id:int>/schedule')
-def get_device(db, device_id):
+def put_device_schedule(db, device_id):
     # TODO
     return ret_json({})
 
