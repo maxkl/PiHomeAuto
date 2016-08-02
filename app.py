@@ -1,3 +1,4 @@
+import subprocess
 import sys
 import threading
 from os import path
@@ -11,6 +12,11 @@ from rcswitch import RCSwitch
 pin = 4
 dbfile = 'test.db'
 static_dir = path.join(path.dirname(path.abspath(__file__)), 'static')
+
+ret = subprocess.call('gpio export ' + str(pin) + ' out', shell=True, stderr=subprocess.STDOUT)
+if ret != 0:
+    print('GPIO export failed', file=sys.stderr)
+    exit(-1)
 
 switch_lock = threading.Lock()
 
@@ -139,4 +145,4 @@ def put_device_schedule(db, device_id):
     return ret_json({})
 
 if __name__ == '__main__':
-    run(host='localhost', port=8080, debug=True, reloader=True)
+    run(host='0.0.0.0', port=8080, debug=True, reloader=True)

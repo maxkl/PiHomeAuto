@@ -29,7 +29,7 @@ function callApi(verb, endpoint, data, cb) {
         cb(new Error('Network/client error'));
     });
 
-    req.open(verb, 'http://localhost:8080/' + endpoint);
+    req.open(verb, '/' + endpoint);
 
     req.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
 
