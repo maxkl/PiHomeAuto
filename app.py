@@ -1,65 +1,113 @@
 import sys
-import subprocess
-import threading
-import re
-from flask import Flask, jsonify, render_template, abort
-from rcswitch import rcswitch
+from os import path
 
-pin = 4
+from bottle import run, get, put, json_dumps, response, request, install, abort, default_app, static_file, delete
+from bottle_sqlite import SQLitePlugin
 
-ret = subprocess.call('gpio export ' + str(pin) + ' out', shell=True, stderr=subprocess.STDOUT)
-if ret != 0:
-    print('GPIO export failed', file=sys.stderr)
-    exit(-1)
+from db_util import create_tables
 
-switch_lock = threading.Lock()
+dbfile = 'test.db'
+static_dir = path.join(path.dirname(path.abspath(__file__)), 'static')
 
-rcswitch.setup()
-switch = rcswitch.RCSwitch()
-switch.enable_transmit(pin)
+create_tables(dbfile)
+
+install(SQLitePlugin(dbfile=dbfile))
 
 
-def switch_on(group, device):
-    with switch_lock:
-        for _ in range(4):
-            switch.switch_on(group, device)
+class CatchAllErrorHandler:
+    def __init__(self, handler):
+        self.handler = handler
+
+    def get(self, status, default_handler=None):
+        return self.handler
 
 
-def switch_off(group, device):
-    with switch_lock:
-        for _ in range(4):
-            switch.switch_off(group, device)
-
-app = Flask(__name__)
+default_app().error_handler = CatchAllErrorHandler(lambda err: print(err, file=sys.stderr))
 
 
-@app.route('/')
-def route_index():
-    return render_template('home.html')
-
-rident = re.compile(r'^[01]{5}$')
-r_device_code = re.compile(r'^([01]{5})([01]{5})$')
+def ret_json(data, *args, **kwargs):
+    response.content_type = 'application/json; charset=utf-8'
+    return json_dumps(data, *args, **kwargs)
 
 
-@app.route('/api/<group>/<device>/<cmd>')
-def route_switch_on(group, device, cmd):
-    if not rident.match(group) or not rident.match(device):
-        return jsonify(success=False, error='Invalid group or device')
-    if cmd == 'on':
-        switch_on(group, device)
-        return jsonify(success=True)
-    elif cmd == 'off':
-        switch_off(group, device)
-        return jsonify(success=True)
-    return jsonify(success=False, error='Unknown command \'' + cmd + '\'')
+@get('/static/<file:path>')
+def get_static(file):
+    return static_file(file, root=static_dir)
 
 
-@app.route('/api/device/<code>/state', methods=['GET', 'PUT'])
-def route_device_state(code):
-    m = r_device_code.match(code)
-    if m is None:
-        abort(400)
+@get('/devices/')
+def get_devices(db):
+    devices = []
+    for device in db.execute('SELECT id, name, group_code, device_code FROM devices'):
+        devices.append(dict(device))
+    return ret_json({'devices': devices})
 
+
+@put('/devices/')
+def put_devices(db):
+    if not request.json:
+        abort(400, 'Not JSON')
+    data = request.json
+    if 'name' not in data or 'group_code' not in data or 'device_code' not in data:
+        abort(400, 'Need, name, group_code and device_code')
+    result = db.execute('INSERT INTO devices (name, group_code, device_code) VALUES (?, ?, ?)', (data['name'], data['group_code'], data['device_code']))
+    return ret_json({
+        'id': result.lastrowid
+    })
+
+
+@get('/devices/<device_id:int>')
+def get_device(db, device_id):
+    row = db.execute('SELECT id, name, group_code, device_code FROM devices WHERE id = ?', (device_id,)).fetchone()
+    if not row:
+        abort(404, 'Device not found')
+    device = dict(row)
+    return ret_json({'device': device})
+
+
+@put('/devices/<device_id:int>')
+def put_device(db, device_id):
+    if not request.json:
+        abort(400, 'Not JSON')
+    data = request.json
+    if 'name' not in data or 'group_code' not in data or 'device_code' not in data:
+        abort(400, 'Need, name, group_code and device_code')
+    result = db.execute('UPDATE devices SET name = ?, group_code = ?, device_code = ? WHERE id = ?', (data['name'], data['group_code'], data['device_code'], device_id))
+    if result.rowcount == 0:
+        abort(404, 'Device not found')
+    return ret_json({})
+
+
+@delete('/devices/<device_id:int>')
+def put_device(db, device_id):
+    result = db.execute('DELETE FROM devices WHERE id = ?', (device_id,))
+    if result.rowcount == 0:
+        abort(404, 'Device not found')
+    return ret_json({})
+
+
+@get('/devices/<device_id:int>/state')
+def get_device(db, device_id):
+    # TODO
+    return ret_json({'state': False})
+
+
+@put('/devices/<device_id:int>/state')
+def get_device(db, device_id):
+    # TODO
+    return ret_json({})
+
+
+@get('/devices/<device_id:int>/schedule')
+def get_device(db, device_id):
+    # TODO
+    return ret_json({'schedule': []})
+
+
+@put('/devices/<device_id:int>/schedule')
+def get_device(db, device_id):
+    # TODO
+    return ret_json({})
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0')
+    run(host='localhost', port=8080, debug=True, reloader=True)
