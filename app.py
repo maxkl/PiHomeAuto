@@ -129,7 +129,10 @@ def put_device_state(db, device_id):
     if request.json is None:
         abort(400, 'Not JSON')
     new_state = request.json
-    switch_set('10100', '01000', new_state)
+    row = db.execute('SELECT group_code, device_code FROM devices WHERE id = ?', (device_id,)).fetchone()
+    if not row:
+        abort(404, 'Device not found')
+    switch_set(row['group_code'], row['device_code'], new_state)
     return ret_json({})
 
 
