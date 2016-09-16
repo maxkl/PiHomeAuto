@@ -19,3 +19,38 @@
 .btn-group .btn {
     float: none;
 }
+
+.spinner-overlay {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 5px 10px;
+
+    font-size: 1.2em;
+    background-color: rgba(100, 100, 100, .7);
+    color: #fff;
+
+    visibility: hidden;
+    opacity: 0;
+    transition: visibility .3s ease, opacity .3s ease;
+}
+
+.spinner-overlay.visible {
+    visibility: visible;
+    opacity: 1;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.spinning {
+    animation: ease spin 1.3s infinite;
+    transform-origin: 47% 48%;
+}

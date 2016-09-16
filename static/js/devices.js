@@ -3,31 +3,17 @@
 
 var $deviceList = $('#device-list');
 var $deviceListBody = $deviceList.find('tbody');
+var $loadingOverlay = $('#loading');
 
 var rCode = /^[01]{5}$/;
-var BASE_36_CHARS = 'abcdefghijklmnopqrstuvwxyz0123456789';
-var ALPHANUMERIC_CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-
-function randomString(len, chars) {
-    chars = chars || ALPHANUMERIC_CHARS;
-    var charCount = chars.length;
-
-    var str = '';
-    while(len--) {
-        str += chars[Math.floor(Math.random() * charCount)];
-    }
-
-    return str;
-}
 
 var devices = {};
 
-function Device(id, name, groupCode, deviceCode, auto) {
+function Device(id, name, groupCode, deviceCode) {
     this.id = id;
     this.name = name;
     this.groupCode = groupCode;
     this.deviceCode = deviceCode;
-    this.auto = auto;
 
     this.hasDom = false;
     this.$el = null;
@@ -35,7 +21,6 @@ function Device(id, name, groupCode, deviceCode, auto) {
     this.$groupCode = null;
     this.$deviceCode = null;
     this.$onOffButtons = null;
-    this.$auto = null;
 }
 
 Device.prototype.setName = function (name) {
@@ -62,14 +47,6 @@ Device.prototype.setDeviceCode = function (deviceCode) {
     }
 };
 
-Device.prototype.setAuto = function (auto) {
-    this.auto = auto;
-
-    if(this.hasDom) {
-        this.$auto.prop('checked', auto);
-    }
-};
-
 Device.prototype.buildDom = function () {
     var self = this;
 
@@ -84,8 +61,7 @@ Device.prototype.buildDom = function () {
     var $name = $('<td>').text(this.name);
     var $group = $('<span>').text(this.groupCode);
     var $device = $('<span>').text(this.deviceCode);
-    var $onOffButtons = $('<button>', { type: 'button', class: 'btn btn-success'}).text('An').add($('<button>', { type: 'button', class: 'btn btn-danger'}).text('Aus'));
-    var $auto = $('<input>', { type: 'checkbox' }).prop('checked', this.auto);
+    var $onOffButtons = $('<button>', { type: 'button', class: 'btn btn-success'}).text('An').add($('<button>', { type: 'button', class: 'btn btn-primary'}).text('Auto')).add($('<button>', { type: 'button', class: 'btn btn-danger'}).text('Aus'));
 
     var $el = $('<tr>').append(
         $('<td>').append(
@@ -103,18 +79,7 @@ Device.prototype.buildDom = function () {
             $('<div>', { class: 'btn-group' }).append($onOffButtons)
         ),
         $('<td>').append(
-            $('<div>', { class: 'checkbox' }).append(
-                $('<label>').append(
-                    $auto,
-                    ' Auto'
-                )
-            )
-        ),
-        $('<td>').append(
             $('<button>', { class: 'btn btn-default' }).text('Zeitplan bearbeiten').click(editSchedule)
-        ),
-        $('<td>').append(
-            $('<button>', { class: 'btn btn-default' }).text('Setzen')
         )
     );
 
@@ -123,74 +88,30 @@ Device.prototype.buildDom = function () {
     this.$groupCode = $group;
     this.$deviceCode = $device;
     this.$onOffButtons = $onOffButtons;
-    this.$auto = $auto;
 
     this.hasDom = true;
 
     $el.appendTo($deviceListBody);
 };
 
-function addDevice(id, name, group, device, auto) {
-    var dev = new Device(id, name, group, device, auto);
+Device.prototype.removeDom = function () {
+    if(this.hasDom) {
+        $deviceListBody.removeChild(this.$el);
+        this.$el = null;
+        this.$name = null;
+        this.$groupCode = null;
+        this.$deviceCode = null;
+        this.$onOffButtons = null;
+        this.hasDom = false;
+    }
+};
+
+function addDevice(id, name, group, device) {
+    var dev = new Device(id, name, group, device);
 
     devices[id] = dev;
 
     dev.buildDom();
-
-    // function editSchedule() {
-    //     openScheduleModal(id, name);
-    // }
-    //
-    // function editProps() {
-    //     openDevicePropsModal(id, name, group, device);
-    // }
-    //
-    // var $name = $('<td>').text(name);
-    // var $group = $('<span>').text(group);
-    // var $device = $('<span>').text(device);
-    //
-    // var $tr = $('<tr>').append(
-    //     $('<td>').append(
-    //         $('<button>', { class: 'btn btn-link' }).append(
-    //             $('<span>', { class: 'glyphicon glyphicon-edit' })
-    //         ).click(editProps)
-    //     ),
-    //     $name,
-    //     $('<td>').append(
-    //         $group,
-    //         '<br />',
-    //         $device
-    //     ),
-    //     $('<td>').append(
-    //         $('<div>', { class: 'btn-group' }).append(
-    //             $('<button>', { type: 'button', class: 'btn btn-success'}).text('An'),
-    //             $('<button>', { type: 'button', class: 'btn btn-danger'}).text('Aus')
-    //         )
-    //     ),
-    //     $('<td>').append(
-    //         $('<div>', { class: 'checkbox' }).append(
-    //             $('<label>').append(
-    //                 $('<input>', { type: 'checkbox' }).prop('checked', auto),
-    //                 ' Auto'
-    //             )
-    //         )
-    //     ),
-    //     $('<td>').append(
-    //         $('<button>', { class: 'btn btn-default' }).text('Zeitplan bearbeiten').click(editSchedule)
-    //     ),
-    //     $('<td>').append(
-    //         $('<button>', { class: 'btn btn-default' }).text('Setzen')
-    //     )
-    // );
-    //
-    // $tr.appendTo($deviceListBody);
-    //
-    // devices[id] = {
-    //     $el: $tr,
-    //     $name: $name,
-    //     $group: $group,
-    //     $device: $device
-    // };
 }
 
 function editDevice(id, name, group, device) {
@@ -247,10 +168,23 @@ $('#device-props-form').submit(function (evt) {
 
     if(name && rCode.test(group) && rCode.test(device)) {
         if(propsModalNew) {
-            var id = randomString(32, ALPHANUMERIC_CHARS);
-            addDevice(id, name, group, device, false);
+            doApiRequest(API.createDevice, name, group, device, function (err, data) {
+                if(err) {
+                    console.error(err);
+                    return;
+                }
+
+                addDevice(data.id, name, group, device);
+            });
         } else {
-            editDevice(editTarget, name, group, device);
+            doApiRequest(API.updateDevice, editTarget, name, group, device, function (err, data) {
+                if(err) {
+                    console.error(err);
+                    return;
+                }
+
+                editDevice(editTarget, name, group, device);
+            });
         }
 
         $devicePropsModal.modal('hide');
@@ -271,11 +205,52 @@ $('#save-schedule').click(function () {
     $scheduleModal.modal('hide');
 });
 
-API.getDevices(function (err, res) {
+var apiRequestQueue = [];
+var apiRequestRunning = false;
+
+function _nextApiRequest() {
+    var req = apiRequestQueue.shift();
+    apiRequestRunning = true;
+    req.method.apply(null, req.args.concat(function (err, data) {
+        if(apiRequestQueue.length > 0) {
+            _nextApiRequest();
+        } else {
+            apiRequestRunning = false;
+            $loadingOverlay.removeClass('visible');
+        }
+
+        req.cb(err, data);
+    }));
+}
+
+function nextApiRequest() {
+    if(apiRequestRunning) return;
+    if(apiRequestQueue.length == 0) return;
+
+    $loadingOverlay.addClass('visible');
+
+    _nextApiRequest();
+}
+
+function doApiRequest(method) {
+    var args = Array.prototype.slice.call(arguments, 1, arguments.length - 1);
+    var cb = arguments[arguments.length - 1];
+    apiRequestQueue.push({
+        method: method,
+        args: args,
+        cb: cb
+    });
+    nextApiRequest();
+}
+
+doApiRequest(API.getDevices, function (err, res) {
     if(err) {
         console.error(err);
         return;
     }
 
-    console.log('Devices:', res);
+    var devices = res['devices'];
+    devices.forEach(function (device) {
+       addDevice(device['id'], device['name'], device['group_code'], device['device_code']);
+    });
 });
