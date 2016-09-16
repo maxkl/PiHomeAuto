@@ -20,43 +20,6 @@ function randomString(len, chars) {
     return str;
 }
 
-function callApi(verb, endpoint, data, cb) {
-    if(typeof cb === 'undefined') {
-        cb = data;
-        data = null;
-    }
-
-    var req = new XMLHttpRequest();
-
-    req.addEventListener('load', function () {
-       if(req.status == 200) {
-           try {
-               var data = JSON.parse(req.responseText);
-
-               if(typeof data === 'object') {
-                   cb(null, data);
-               } else {
-                   cb(new TypeError('Server did not respond with a JSON object'));
-               }
-           } catch (e) {
-               cb(new SyntaxError('Server did not respond with valid JSON'));
-           }
-       } else {
-           cb(new Error('Server error: ' + req.status + ' (' + req.statusText + ')'));
-       }
-    });
-
-    req.addEventListener('error', function () {
-        cb(new Error('Network/client error'));
-    });
-
-    req.open(verb, 'http://localhost:8000/' + endpoint);
-
-    req.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
-
-    req.send(JSON.stringify(data));
-}
-
 var devices = {};
 
 function Device(id, name, groupCode, deviceCode, auto) {
@@ -308,15 +271,11 @@ $('#save-schedule').click(function () {
     $scheduleModal.modal('hide');
 });
 
-callApi('put', 'devices/', {
-    name: 'Küche',
-    group_code: '10100',
-    device_code: '10000'
-}, function (err, res) {
+API.getDevices(function (err, res) {
     if(err) {
         console.error(err);
         return;
     }
 
-    console.log(res);
+    console.log('Devices:', res);
 });
