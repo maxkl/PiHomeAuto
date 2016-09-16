@@ -10,7 +10,8 @@ def create_tables(dbfile):
         'id INTEGER PRIMARY KEY,'
         'name TEXT,'
         'group_code TEXT,'
-        'device_code TEXT)'
+        'device_code TEXT,'
+        'schedule TEXT)'
     ))
 
     c.close()
