@@ -21,7 +21,7 @@
                         cb(new TypeError('Server did not respond with a JSON object'));
                     }
                 } catch (e) {
-                    cb(new SyntaxError('Server did not respond with valid JSON'));
+                    cb(new SyntaxError('Server did not respond with valid JSON (' + e.message + ')'));
                 }
             } else {
                 cb(new Error('Server error: ' + req.status + ' (' + req.statusText + ')'));

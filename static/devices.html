@@ -67,7 +67,21 @@
                         <h4 class="modal-title">Zeitplan von "<span class="schedule-name"></span>" bearbeiten</h4>
                     </div>
                     <div class="modal-body">
-                        <p>Hello</p>
+                        <div style="margin-bottom: 10px">
+                            <button type="button" id="new-task" class="btn btn-primary"><span class="glyphicon glyphicon-plus-sign"></span> Neuer Eintrag</button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table" id="schedule-table">
+                                <thead>
+                                    <tr>
+                                        <th>Uhrzeit</th>
+                                        <th>Aktion</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-default" data-dismiss="modal">Schließen</button>

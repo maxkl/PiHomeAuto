@@ -20,7 +20,6 @@ function Device(id, name, groupCode, deviceCode) {
     this.$name = null;
     this.$groupCode = null;
     this.$deviceCode = null;
-    this.$onOffButtons = null;
 }
 
 Device.prototype.setName = function (name) {
@@ -58,10 +57,25 @@ Device.prototype.buildDom = function () {
         openDevicePropsModal(self.id, self.name, self.groupCode, self.deviceCode);
     }
 
+    function setStateOn() {
+        doApiRequest(API.setDeviceState, [self.id, true]);
+    }
+
+    function setStateAuto() {
+        // TODO
+        console.error('Auto btn not implemented');
+    }
+
+    function setStateOff() {
+        doApiRequest(API.setDeviceState, [self.id, false]);
+    }
+
     var $name = $('<td>').text(this.name);
     var $group = $('<span>').text(this.groupCode);
     var $device = $('<span>').text(this.deviceCode);
-    var $onOffButtons = $('<button>', { type: 'button', class: 'btn btn-success'}).text('An').add($('<button>', { type: 'button', class: 'btn btn-primary'}).text('Auto')).add($('<button>', { type: 'button', class: 'btn btn-danger'}).text('Aus'));
+    var $onButton = $('<button>', { type: 'button', class: 'btn btn-success'}).text('An').click(setStateOn);
+    var $autoButton = $('<button>', { type: 'button', class: 'btn btn-primary'}).text('Auto').click(setStateAuto);
+    var $offButton = $('<button>', { type: 'button', class: 'btn btn-danger'}).text('Aus').click(setStateOff);
 
     var $el = $('<tr>').append(
         $('<td>').append(
@@ -76,7 +90,7 @@ Device.prototype.buildDom = function () {
             $device
         ),
         $('<td>').append(
-            $('<div>', { class: 'btn-group' }).append($onOffButtons)
+            $('<div>', { class: 'btn-group' }).append($onButton, $autoButton, $offButton)
         ),
         $('<td>').append(
             $('<button>', { class: 'btn btn-default' }).text('Zeitplan bearbeiten').click(editSchedule)
@@ -87,7 +101,6 @@ Device.prototype.buildDom = function () {
     this.$name = $name;
     this.$groupCode = $group;
     this.$deviceCode = $device;
-    this.$onOffButtons = $onOffButtons;
 
     this.hasDom = true;
 
@@ -101,7 +114,6 @@ Device.prototype.removeDom = function () {
         this.$name = null;
         this.$groupCode = null;
         this.$deviceCode = null;
-        this.$onOffButtons = null;
         this.hasDom = false;
     }
 };
@@ -168,7 +180,7 @@ $('#device-props-form').submit(function (evt) {
 
     if(name && rCode.test(group) && rCode.test(device)) {
         if(propsModalNew) {
-            doApiRequest(API.createDevice, name, group, device, function (err, data) {
+            doApiRequest(API.createDevice, [name, group, device], function (err, data) {
                 if(err) {
                     console.error(err);
                     return;
@@ -177,7 +189,7 @@ $('#device-props-form').submit(function (evt) {
                 addDevice(data.id, name, group, device);
             });
         } else {
-            doApiRequest(API.updateDevice, editTarget, name, group, device, function (err, data) {
+            doApiRequest(API.updateDevice, [editTarget, name, group, device], function (err, data) {
                 if(err) {
                     console.error(err);
                     return;
@@ -192,17 +204,103 @@ $('#device-props-form').submit(function (evt) {
 });
 
 var $scheduleModal = $('#schedule-modal');
+var $scheduleTable = $scheduleModal.find('#schedule-table');
+var $scheduleTableBody = $scheduleTable.find('tbody');
+var $newTask = $scheduleModal.find('#new-task');
 
 var scheduleId;
+var scheduleTasks;
+
+function addScheduleTask(time, state) {
+    var data = {};
+
+    var $el = $('<tr>');
+
+    function deleteTask() {
+        var index = scheduleTasks.indexOf(data);
+
+        if(index == -1) return;
+
+        $el.remove();
+        scheduleTasks.splice(index, 1);
+    }
+
+    var hours = Math.floor(time / 60);
+    var minutes = time % 60;
+
+    var $hours = $('<input>', { class: 'form-control', type: 'number' }).attr('max', 23).val(hours);
+    var $minutes = $('<input>', { class: 'form-control', type: 'number' }).val(minutes);
+    var $action = $('<select>', { class: 'form-control' }).append(
+        $('<option>').attr('value', 'on').text('An'),
+        $('<option>').attr('value', 'off').text('Aus')
+    ).val(state ? 'on' : 'off');
+
+    $el.append(
+        $('<td>').append(
+            $('<div>', { class: 'input-group' }).append(
+                $hours,
+                $('<span>', { class: 'input-group-addon', style: 'border-left:0;border-right:0' }).text(':'),
+                $minutes
+            )
+        ),
+        $('<td>').append(
+            $action
+        ),
+        $('<td>').append(
+            $('<button>', { class: 'btn btn-link' }).append(
+                $('<span>', { class: 'glyphicon glyphicon-remove text-danger' })
+            ).click(deleteTask)
+        )
+    );
+
+    $scheduleTableBody.append($el);
+
+    data.$el = $el;
+    data.$hour = $hours;
+    data.$minute = $minutes;
+    data.$action = $action;
+
+    scheduleTasks.push(data);
+}
 
 function openScheduleModal(id, name) {
     scheduleId = id;
     $scheduleModal.find('.schedule-name').text(name);
+    $scheduleTableBody.empty();
+    scheduleTasks = [];
     $scheduleModal.modal('show');
+
+    doApiRequest(API.getDeviceSchedule, [id], function (err, data) {
+        if(err) {
+            console.error(err);
+            return;
+        }
+
+        var schedule = data['schedule'];
+
+        schedule.forEach(function (task) {
+            addScheduleTask(task['time'], task['state']);
+        });
+    });
 }
+
+$newTask.click(function () {
+    addScheduleTask(0, true);
+});
 
 $('#save-schedule').click(function () {
     $scheduleModal.modal('hide');
+
+    var schedule = [];
+    scheduleTasks.forEach(function (data) {
+        var hours = +data.$hour.val();
+        var minutes = +data.$minute.val();
+        schedule.push({
+            time: hours * 60 + minutes,
+            state: data.$action.val() == 'on'
+        });
+    });
+    doApiRequest(API.setDeviceSchedule, [scheduleId, schedule]);
 });
 
 var apiRequestQueue = [];
@@ -219,7 +317,9 @@ function _nextApiRequest() {
             $loadingOverlay.removeClass('visible');
         }
 
-        req.cb(err, data);
+        if(req.cb) {
+            req.cb(err, data);
+        }
     }));
 }
 
@@ -232,9 +332,9 @@ function nextApiRequest() {
     _nextApiRequest();
 }
 
-function doApiRequest(method) {
-    var args = Array.prototype.slice.call(arguments, 1, arguments.length - 1);
-    var cb = arguments[arguments.length - 1];
+function doApiRequest(method, args, cb) {
+    // var args = Array.prototype.slice.call(arguments, 1, arguments.length - 1);
+    // var cb = arguments[arguments.length - 1];
     apiRequestQueue.push({
         method: method,
         args: args,
@@ -243,7 +343,7 @@ function doApiRequest(method) {
     nextApiRequest();
 }
 
-doApiRequest(API.getDevices, function (err, res) {
+doApiRequest(API.getDevices, [], function (err, res) {
     if(err) {
         console.error(err);
         return;

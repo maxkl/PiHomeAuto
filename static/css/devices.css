@@ -3,6 +3,10 @@
     vertical-align: middle;
 }
 
+#device-list tr td:nth-child(1) {
+    text-align: center;
+}
+
 #device-list tr td:nth-child(2) {
     white-space: normal;
 }
@@ -14,6 +18,22 @@
 
 #device-list tr td:nth-child(4) {
     text-align: center;
+}
+
+#schedule-table tr td {
+    vertical-align: middle;
+}
+
+#schedule-table tr td:nth-child(1) .input-group {
+    width: 11em;
+}
+
+#schedule-table tr td:nth-child(2) select {
+    width: auto;
+}
+
+#schedule-table tr td:nth-child(3) {
+    text-align: right;
 }
 
 .btn-group .btn {
