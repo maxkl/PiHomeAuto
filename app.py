@@ -3,7 +3,6 @@ import json
 import subprocess
 import sys
 import threading
-from os import path
 
 import sqlite3
 from bottle import json_dumps, response, request, abort, Bottle
@@ -14,8 +13,7 @@ from rcswitch import RCSwitch
 from scheduler.scheduler import Scheduler
 
 pin = 4
-dbfile = 'test.db'
-static_dir = path.join(path.dirname(path.abspath(__file__)), 'static')
+dbfile = 'pihomeauto.db'
 
 exitcode = subprocess.call('gpio export ' + str(pin) + ' out', shell=True, stderr=subprocess.STDOUT)
 if exitcode != 0:
