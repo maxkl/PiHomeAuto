@@ -61,11 +61,6 @@ Device.prototype.buildDom = function () {
         doApiRequest(API.setDeviceState, [self.id, true]);
     }
 
-    function setStateAuto() {
-        // TODO
-        console.error('Auto btn not implemented');
-    }
-
     function setStateOff() {
         doApiRequest(API.setDeviceState, [self.id, false]);
     }
@@ -74,7 +69,6 @@ Device.prototype.buildDom = function () {
     var $group = $('<span>').text(this.groupCode);
     var $device = $('<span>').text(this.deviceCode);
     var $onButton = $('<button>', { type: 'button', class: 'btn btn-success'}).text('An').click(setStateOn);
-    var $autoButton = $('<button>', { type: 'button', class: 'btn btn-primary'}).text('Auto').click(setStateAuto);
     var $offButton = $('<button>', { type: 'button', class: 'btn btn-danger'}).text('Aus').click(setStateOff);
 
     var $el = $('<tr>').append(
@@ -90,7 +84,7 @@ Device.prototype.buildDom = function () {
             $device
         ),
         $('<td>').append(
-            $('<div>', { class: 'btn-group' }).append($onButton, $autoButton, $offButton)
+            $('<div>', { class: 'btn-group' }).append($onButton, $offButton)
         ),
         $('<td>').append(
             $('<button>', { class: 'btn btn-secondary' }).text('Zeitplan bearbeiten').click(editSchedule)
