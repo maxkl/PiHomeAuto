@@ -6,8 +6,8 @@
         <title>Geräte</title>
         <link rel="shortcut icon" href="/favicon.ico?v=2" />
         <link rel="apple-touch-icon image_src" href="/apple-touch-icon.png?v=2" />
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" />
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+        <link rel="stylesheet" href="bootstrap-4.0.0-beta.2/css/bootstrap.min.css" />
+        <link rel="stylesheet" href="font-awesome-4.7.0/css/font-awesome.min.css" />
         <link rel="stylesheet" href="css/devices.css" />
     </head>
     <body>
@@ -66,11 +66,11 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
                         <h4 class="modal-title">Zeitplan von "<span class="schedule-name"></span>" bearbeiten</h4>
+                        <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
                     </div>
                     <div class="modal-body">
-                        <div style="margin-bottom: 10px">
+                        <div class="mb-4">
                             <button type="button" id="new-task" class="btn btn-primary"><span class="fa fa-plus-sign"></span> Neuer Eintrag</button>
                         </div>
                         <div class="table-responsive">
@@ -98,9 +98,8 @@
             Loading...
         </div>
 
-        <script src="js/lib/jquery-3.0.0.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js"></script>
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js"></script>
+        <script src="js/lib/jquery-3.2.1.slim.min.js"></script>
+        <script src="bootstrap-4.0.0-beta.2/js/bootstrap.min.js"></script>
         <script src="js/api.js"></script>
         <script src="js/devices.js"></script>
     </body>
