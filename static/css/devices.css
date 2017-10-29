@@ -16,8 +16,7 @@ html {
 }
 
 #device-list tr td:nth-child(3) {
-    font: .9em Menlo, Monaco, Consolas, "Courier New", monospace;
-    opacity: .7;
+    font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
 }
 
 #device-list tr td:nth-child(4) {
@@ -28,15 +27,16 @@ html {
     vertical-align: middle;
 }
 
-#schedule-table tr td:nth-child(1) .input-group {
-    width: 11em;
+#schedule-table tr td:nth-child(1) .form-control {
+    width: 5rem;
 }
 
-#schedule-table tr td:nth-child(2) select {
-    width: auto;
+#schedule-table tr td:nth-child(2) .form-control {
+    width: 4rem;
+    max-width: 4rem;
 }
 
-#schedule-table tr td:nth-child(3) {
+#schedule-table tr td:nth-child(4) {
     text-align: right;
 }
 

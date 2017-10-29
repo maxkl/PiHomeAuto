@@ -256,7 +256,7 @@ function addScheduleTask(time, weekdays, state) {
         $('<td>').append(
             $('<div>', { class: 'input-group' }).append(
                 $hours,
-                $('<span>', { class: 'input-group-addon', style: 'border-left:0;border-right:0' }).text(':'),
+                $('<span>', { class: 'input-group-addon' }).text(':'),
                 $minutes
             )
         ),
