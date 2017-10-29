@@ -25,19 +25,18 @@ switch_lock = threading.Lock()
 RCSwitch.setup()
 switch = RCSwitch()
 switch.set_pulse_length(300)
+switch.set_repeat_transmit(40)
 switch.enable_transmit(pin)
 
 
 def switch_on(group, device):
     with switch_lock:
-        for _ in range(4):
-            switch.switch_on(group, device)
+        switch.switch_on(group, device)
 
 
 def switch_off(group, device):
     with switch_lock:
-        for _ in range(4):
-            switch.switch_off(group, device)
+        switch.switch_off(group, device)
 
 
 def switch_set(group, device, on):
