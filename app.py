@@ -24,6 +24,7 @@ switch_lock = threading.Lock()
 
 RCSwitch.setup()
 switch = RCSwitch()
+switch.set_pulse_length(300)
 switch.enable_transmit(pin)
 
 
