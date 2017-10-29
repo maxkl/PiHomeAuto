@@ -80,7 +80,7 @@ Device.prototype.buildDom = function () {
     var $el = $('<tr>').append(
         $('<td>').append(
             $('<button>', { class: 'btn btn-link' }).append(
-                $('<span>', { class: 'glyphicon glyphicon-edit' })
+                $('<span>', { class: 'fa fa-edit' })
             ).click(editProps)
         ),
         $name,
@@ -93,7 +93,7 @@ Device.prototype.buildDom = function () {
             $('<div>', { class: 'btn-group' }).append($onButton, $autoButton, $offButton)
         ),
         $('<td>').append(
-            $('<button>', { class: 'btn btn-default' }).text('Zeitplan bearbeiten').click(editSchedule)
+            $('<button>', { class: 'btn btn-secondary' }).text('Zeitplan bearbeiten').click(editSchedule)
         )
     );
 
@@ -248,7 +248,7 @@ function addScheduleTask(time, state) {
         ),
         $('<td>').append(
             $('<button>', { class: 'btn btn-link' }).append(
-                $('<span>', { class: 'glyphicon glyphicon-remove text-danger' })
+                $('<span>', { class: 'fa fa-remove text-danger' })
             ).click(deleteTask)
         )
     );

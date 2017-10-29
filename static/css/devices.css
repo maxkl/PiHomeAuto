@@ -1,4 +1,8 @@
 
+html {
+    font-size: 14px;
+}
+
 #device-list tr td {
     vertical-align: middle;
 }
@@ -34,10 +38,6 @@
 
 #schedule-table tr td:nth-child(3) {
     text-align: right;
-}
-
-.btn-group .btn {
-    float: none;
 }
 
 .spinner-overlay {
