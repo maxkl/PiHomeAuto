@@ -211,7 +211,7 @@ var $newTask = $scheduleModal.find('#new-task');
 var scheduleId;
 var scheduleTasks;
 
-function addScheduleTask(time, state) {
+function addScheduleTask(time, weekdays, state) {
     var data = {};
 
     var $el = $('<tr>');
@@ -225,17 +225,34 @@ function addScheduleTask(time, state) {
         scheduleTasks.splice(index, 1);
     }
 
-    var hours = Math.floor(time / 60);
-    var minutes = time % 60;
-
-    var $hours = $('<input>', { class: 'form-control', type: 'number' }).attr('max', 23).val(hours);
-    var $minutes = $('<input>', { class: 'form-control', type: 'number' }).val(minutes);
     var $action = $('<select>', { class: 'form-control' }).append(
         $('<option>').attr('value', 'on').text('An'),
         $('<option>').attr('value', 'off').text('Aus')
     ).val(state ? 'on' : 'off');
 
+    var hours = Math.floor(time / 60);
+    var minutes = time % 60;
+
+    var $hours = $('<input>', { class: 'form-control', type: 'number', min: 0, max: 23 }).val(hours);
+    var $minutes = $('<input>', { class: 'form-control', type: 'number', min: 0, max: 59 }).val(minutes);
+
+    var $weekdays = $('<div>', { class: 'row no-gutters flex-nowrap' });
+
+    var $weekdayCheckboxes = [];
+    for (var i = 0; i < 7; i++) {
+        var $weekdayCheckbox = $('<input>', { type: 'checkbox' }).prop('checked', weekdays & (1 << i));
+        $weekdays.append(
+            $('<div>', { class: 'col px-1' }).append(
+                $weekdayCheckbox
+            )
+        );
+        $weekdayCheckboxes.push($weekdayCheckbox);
+    }
+
     $el.append(
+        $('<td>').append(
+            $action
+        ),
         $('<td>').append(
             $('<div>', { class: 'input-group' }).append(
                 $hours,
@@ -244,7 +261,7 @@ function addScheduleTask(time, state) {
             )
         ),
         $('<td>').append(
-            $action
+            $weekdays
         ),
         $('<td>').append(
             $('<button>', { class: 'btn btn-link' }).append(
@@ -258,6 +275,7 @@ function addScheduleTask(time, state) {
     data.$el = $el;
     data.$hour = $hours;
     data.$minute = $minutes;
+    data.$weekdayCheckboxes = $weekdayCheckboxes;
     data.$action = $action;
 
     scheduleTasks.push(data);
@@ -279,13 +297,13 @@ function openScheduleModal(id, name) {
         var schedule = data['schedule'];
 
         schedule.forEach(function (task) {
-            addScheduleTask(task['time'], task['state']);
+            addScheduleTask(task['time'], task['weekdays'], task['state']);
         });
     });
 }
 
 $newTask.click(function () {
-    addScheduleTask(0, true);
+    addScheduleTask(0, 0x7f, true);
 });
 
 $('#save-schedule').click(function () {
@@ -295,8 +313,15 @@ $('#save-schedule').click(function () {
     scheduleTasks.forEach(function (data) {
         var hours = +data.$hour.val();
         var minutes = +data.$minute.val();
+        var weekdays = 0;
+        for (var i = 0; i < 7; i++) {
+            if (data.$weekdayCheckboxes[i].prop('checked')) {
+                weekdays |= 1 << i;
+            }
+        }
         schedule.push({
             time: hours * 60 + minutes,
+            weekdays: weekdays,
             state: data.$action.val() == 'on'
         });
     });

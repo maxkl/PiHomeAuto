@@ -160,17 +160,21 @@ def normalize_schedule(sched):
     for task in sched:
         if not isinstance(task, dict):
             raise TypeError('Task is not a dict')
-        if 'state' not in task or 'time' not in task:
-            raise AttributeError('Task is missing state and/or time')
+        if 'state' not in task or 'time' not in task or 'weekdays' not in task:
+            raise AttributeError('Task is missing state, time, and/or weekdays')
         state = task['state']
         if not isinstance(state, bool):
             raise TypeError('State is not a bool')
         time = task['time']
         if not isinstance(time, int):
             raise TypeError('Time is not an int')
+        time = task['weekdays']
+        if not isinstance(weekdays, int):
+            raise TypeError('Weekdays is not an int')
         new_sched.append({
             'state': state,
-            'time': time
+            'time': time,
+            'weekdays': weekdays
         })
     return new_sched
 
@@ -213,6 +217,9 @@ def use_db(func):
 
 @use_db
 def query_tasks(t, db):
+    time = t.hour * 60 + t.minute
+    weekday_bit = 1 << t.weekday()
+
     rows = db.execute('SELECT group_code, device_code, schedule FROM devices').fetchall()
     results = []
     for row in rows:
@@ -223,7 +230,7 @@ def query_tasks(t, db):
             continue
         schedule = json.loads(schedule_str)
         for task in schedule:
-            if task['time'] == t:
+            if task['time'] == time and task['weekdays'] & weekday_bit:
                 results.append((
                     group_code,
                     device_code,

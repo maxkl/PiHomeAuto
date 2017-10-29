@@ -9,7 +9,6 @@ class Scheduler:
     def __init__(self, query_tasks, exec_task):
         self._sleep = Sleeper()
         self._thread = None
-        self._last_time = None
         self._query_tasks = query_tasks
         self._exec_task = exec_task
         self._should_stop = False
@@ -31,20 +30,11 @@ class Scheduler:
             if self._should_stop:
                 break
             # Wait until the next minute
-            self._sleep.sleep(60 - datetime.now().second)
+            self._sleep.sleep(60 - datetime.now().second + 1)
 
     def _exec_tasks(self):
         now = datetime.now()
-        print('Executing tasks at {}'.format(now.strftime('%H:%M:%S')))
-
-        time = now.hour * 60 + now.minute
-
-        # Don't re-run tasks if they've just been executed
-        if time == self._last_time:
-            return
-        self._last_time = time
-
-        tasks = self._query_tasks(time)
+        tasks = self._query_tasks(now)
         for task in tasks:
             # Ignore all exceptions except SIGINT and sys.exit()
             try:
