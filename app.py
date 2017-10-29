@@ -168,7 +168,7 @@ def normalize_schedule(sched):
         time = task['time']
         if not isinstance(time, int):
             raise TypeError('Time is not an int')
-        time = task['weekdays']
+        weekdays = task['weekdays']
         if not isinstance(weekdays, int):
             raise TypeError('Weekdays is not an int')
         new_sched.append({
