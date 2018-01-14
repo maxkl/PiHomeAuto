@@ -12,7 +12,7 @@ from db_util import create_tables
 from rcswitch import RCSwitch
 from scheduler.scheduler import Scheduler
 
-pin = 4
+pin = 9
 dbfile = 'pihomeauto.db'
 
 exitcode = subprocess.call('gpio export ' + str(pin) + ' out', shell=True, stderr=subprocess.STDOUT)
