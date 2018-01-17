@@ -9,3 +9,5 @@ __pycache__/
 /rcswitch
 
 /.htpasswd
+
+/config.py
